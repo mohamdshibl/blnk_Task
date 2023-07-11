@@ -39,7 +39,9 @@ dependencies:
   camera:
   path_provider:
   image_picker:
-  google_mlkit_text_recognition:
+  edge_detection:
+  permission_handler:
+  path:
 
 
 dev_dependencies:

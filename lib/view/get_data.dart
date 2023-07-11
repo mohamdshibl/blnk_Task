@@ -2,8 +2,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:edge_detection/edge_detection.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ScanIdScreen extends StatefulWidget {
   @override
@@ -12,6 +15,7 @@ class ScanIdScreen extends StatefulWidget {
 class _ScanIdScreenState extends State<ScanIdScreen> {
 
   File? _image;
+  String? _imagee;
   String txt= '';
 
   final firstNameController = TextEditingController();
@@ -21,6 +25,47 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
   final landlineController = TextEditingController();
   final mobileController = TextEditingController();
 
+  Future<void> _detectIdCard() async {
+
+      bool isCameraGranted = await Permission.camera.request().isGranted;
+      if (!isCameraGranted) {
+        isCameraGranted =
+            await Permission.camera.request() == PermissionStatus.granted;
+      }
+
+      if (!isCameraGranted) {
+        // Have not permission to camera
+        return;
+      }
+
+      // Generate filepath for saving
+      String imagePath = join((await getApplicationSupportDirectory()).path,
+          "${(DateTime.now().millisecondsSinceEpoch / 1000).round()}.jpeg");
+
+      try {
+        //Make sure to await the call to detectEdge.
+        bool success = await EdgeDetection.detectEdge(
+          imagePath,
+          canUseGallery: true,
+          androidScanTitle: 'Scanning', // use custom localizations for android
+          androidCropTitle: 'Crop',
+          androidCropBlackWhiteTitle: 'Black White',
+          androidCropReset: 'Reset',
+        );
+        print("success: $success");
+      } catch (e) {
+        print(e);
+      }
+
+      // If the widget was removed from the tree while the asynchronous platform
+      // message was in flight, we want to discard the reply rather than calling
+      // setState to update our non-existent appearance.
+      if (!mounted) return;
+
+      setState(() {
+        _imagee = imagePath;
+      });
+    }
   Future<void> _pickImage(ImageSource source) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
@@ -113,11 +158,12 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
               ElevatedButton(
                 onPressed: () {
                   _image = null;
-                  _pickImage(ImageSource.camera).then((value) {
-                    if (_image != null) {
-                      //
-                    }
-                  });
+                  _detectIdCard();
+                  // _pickImage(ImageSource.camera).then((value) {
+                  //   if (_image != null) {
+                  //     //
+                  //   }
+                  // });
                 },
                 child: const Text('Pick image'),
               ),
@@ -139,9 +185,9 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                 height: 250,
                 color: Colors.green.shade100,
                 child: Center(
-                  child: (_image != null)
-                      ? Image.file(_image!)
-                      : Icon(Icons.add_a_photo, size: 60),
+                  child: (_imagee != null)
+                      ? Image.file(File(_imagee!))
+                      : const Icon(Icons.add_a_photo, size: 60),
                 ),
               ),
             ],
@@ -178,3 +224,5 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     mobileController.clear();
   }
 }
+
+
