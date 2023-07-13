@@ -8,6 +8,9 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../constants/custom_widget.dart';
+import '../constants/utils.dart';
+
 class ScanIdScreen extends StatefulWidget {
   @override
   State<ScanIdScreen> createState() => _ScanIdScreenState();
@@ -16,6 +19,7 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
 
   File? _image;
   String? _imagee;
+  String? _imageee;
   String txt= '';
 
   final firstNameController = TextEditingController();
@@ -24,6 +28,7 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
   final areaController = TextEditingController();
   final landlineController = TextEditingController();
   final mobileController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   Future<void> _detectIdCard() async {
 
@@ -56,14 +61,13 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
       } catch (e) {
         print(e);
       }
-
-      // If the widget was removed from the tree while the asynchronous platform
-      // message was in flight, we want to discard the reply rather than calling
-      // setState to update our non-existent appearance.
       if (!mounted) return;
-
       setState(() {
-        _imagee = imagePath;
+        if (_imagee==null){
+          _imagee = imagePath;
+        }else {
+          _imageee = imagePath;
+        }
       });
     }
   Future<void> _pickImage(ImageSource source) async {
@@ -77,7 +81,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
       if (kDebugMode) {
         print(e);
       }
-      // Show an error message to the user or handle the error appropriately
     }
   }
 
@@ -103,94 +106,143 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 5),
-              TextField(
-                controller: firstNameController,
-                decoration: InputDecoration(
-            labelText: "firstName",
-            fillColor: Colors.white,
-            border:  OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25.0),
-              borderSide: const BorderSide(
-              ),
-            ),
-          ),
-              ),
-              TextField(
-                controller: lastNameController,
-                decoration: InputDecoration(labelText: 'Last Name'),
-              ),
-              TextField(
-                controller: addressController,
-                decoration: InputDecoration(labelText: 'Address'),
-              ),
-              TextField(
-                controller: areaController,
-                decoration: InputDecoration(
-                  labelText: "area",
-                  fillColor: Colors.white,
-                  border:  OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0),
-                    borderSide: const BorderSide(
-                    ),
-                  ),
-              ),
-              ),
-              TextField(
-                controller: landlineController,
-                decoration: InputDecoration(labelText: 'Landline',
-                    enabledBorder:OutlineInputBorder(borderSide:
-                    BorderSide(width: 3, color: Colors.purple), //<-- SEE HERE
-                      borderRadius: BorderRadius.circular(50.0),) ),
-              ),
-              TextField(
-                controller: mobileController,
-                decoration: InputDecoration(labelText: 'Mobile'),
-              ),
-              ElevatedButton(
-                onPressed: submitForm,
-                child: Text('Submit'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _image = null;
-                  _detectIdCard();
-                  // _pickImage(ImageSource.camera).then((value) {
-                  //   if (_image != null) {
-                  //     //
-                  //   }
-                  // });
-                },
-                child: const Text('Pick image'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _image = null;
-                  _pickImage(ImageSource.gallery).then((value) {
-                    if (_image != null) {
-                     //
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                CustomTextField(
+                  controller: firstNameController,
+                  labelText: 'First Name',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a valid first name';
                     }
-                  });
-                },
-                child: const Text('Pick image from gallery'),
-              ),
-              SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                height: 250,
-                color: Colors.green.shade100,
-                child: Center(
-                  child: (_imagee != null)
-                      ? Image.file(File(_imagee!))
-                      : const Icon(Icons.add_a_photo, size: 60),
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 5),
+                TextField(
+                  controller: firstNameController,
+                  decoration: InputDecoration(
+              labelText: "firstName",
+              fillColor: Colors.white,
+              border:  OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25.0),
+                borderSide: const BorderSide(
                 ),
               ),
-            ],
+            ),
+                ),
+                TextField(
+                  controller: lastNameController,
+                  decoration: InputDecoration(labelText: 'Last Name'),
+                ),
+                TextField(
+                  controller: addressController,
+                  decoration: InputDecoration(labelText: 'Address'),
+                ),
+                TextField(
+                  controller: areaController,
+                  decoration: InputDecoration(
+                    labelText: "area",
+                    fillColor: Colors.white,
+                    border:  OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25.0),
+                      borderSide: const BorderSide(
+                      ),
+                    ),
+                ),
+                ),
+                TextField(
+                  controller: landlineController,
+                  decoration: InputDecoration(labelText: 'Landline',
+                      enabledBorder:OutlineInputBorder(borderSide:
+                      BorderSide(width: 3, color: Colors.purple), //<-- SEE HERE
+                        borderRadius: BorderRadius.circular(50.0),) ),
+                ),
+                TextField(
+                  controller: mobileController,
+                  decoration: InputDecoration(labelText: 'Mobile'),
+                ),
+                ElevatedButton(
+                  onPressed: submitForm,
+                  child: Text('Submit'),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    _image = null;
+                    _detectIdCard();
+                    // _pickImage(ImageSource.camera).then((value) {
+                    //   if (_image != null) {
+                    //     //
+                    //   }
+                    // });
+                  },
+                  child: const Text('Pick front image'),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    _image = null;
+                    _pickImage(ImageSource.gallery).then((value) {
+                      if (_image != null) {
+                       //
+                      }
+                    });
+                  },
+
+                  child: const Text('Pick image from gallery'),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _imagee=null;
+                      _imageee=null;
+                    });
+                  },
+                  child: const Text('reset'),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  height: 250,
+                  color: Colors.grey.shade100,
+                  child: Center(
+                    child: (_imagee != null)
+                        ? Image.file(File(_imagee!))
+                        : Image.asset(AssetsImages.frontID,),
+                  ),
+                ),
+                SizedBox(height: 20),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    _image = null;
+                    _detectIdCard();
+                    // _pickImage(ImageSource.camera).then((value) {
+                    //   if (_image != null) {
+                    //     //
+                    //   }
+                    // });
+                  },
+                  child: const Text('Pick back image'),
+                ),
+                Container(
+                  width: double.infinity,
+                  height: 250,
+                  color: Colors.grey.shade100,
+                  child: Center(
+                    child: (_imageee != null)
+                        ? Image.file(File(_imageee!))
+                        : const Icon(Icons.add_a_photo, size: 60),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -214,6 +266,7 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     print('Area: $area');
     print('Landline: $landline');
     print('Mobile: $mobile');
+
 
     // Clear the text fields
     firstNameController.clear();
