@@ -44,6 +44,7 @@ dependencies:
   path:
   googleapis:
   googleapis_auth:
+  gsheets:
 
 
 dev_dependencies:

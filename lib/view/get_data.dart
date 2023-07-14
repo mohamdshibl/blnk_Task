@@ -193,7 +193,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                       }
                     });
                   },
-
                   child: const Text('Pick image from gallery'),
                 ),
                 SizedBox(height: 20),
@@ -217,7 +216,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                         : Image.asset(AssetsImages.frontID,),
                   ),
                 ),
-                SizedBox(height: 20),
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
@@ -249,7 +247,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     );
   }
   void submitForm() {
-    // Get the entered values
     final firstName = firstNameController.text;
     final lastName = lastNameController.text;
     final address = addressController.text;
@@ -257,9 +254,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     final landline = landlineController.text;
     final mobile = mobileController.text;
 
-    // Perform further processing or submit the form data
-    // You can store it in a Google Spreadsheet or perform other actions
-    // For now, we'll print the values to the console
     print('First Name: $firstName');
     print('Last Name: $lastName');
     print('Address: $address');
