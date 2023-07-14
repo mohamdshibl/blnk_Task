@@ -45,6 +45,9 @@ dependencies:
   googleapis:
   googleapis_auth:
   gsheets:
+  sizer:
+  bloc:
+  flutter_bloc:
 
 
 dev_dependencies:

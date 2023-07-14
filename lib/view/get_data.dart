@@ -1,26 +1,29 @@
-
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:edge_detection/edge_detection.dart';
 import 'package:path/path.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:path/path.dart' as path;
+import 'package:sizer/sizer.dart';
 import '../constants/custom_widget.dart';
 import '../constants/utils.dart';
+import '../model/user_model.dart';
+import '../shared/remote/Gsheets.dart';
 
 class ScanIdScreen extends StatefulWidget {
   @override
   State<ScanIdScreen> createState() => _ScanIdScreenState();
 }
-class _ScanIdScreenState extends State<ScanIdScreen> {
 
-  File? _image;
-  String? _imagee;
-  String? _imageee;
-  String txt= '';
+class _ScanIdScreenState extends State<ScanIdScreen> {
+  String? _frontImage;
+  String? _backImage;
+  String? _frontId;
+  String? _backId;
 
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
@@ -29,61 +32,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
   final landlineController = TextEditingController();
   final mobileController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
-  Future<void> _detectIdCard() async {
-
-      bool isCameraGranted = await Permission.camera.request().isGranted;
-      if (!isCameraGranted) {
-        isCameraGranted =
-            await Permission.camera.request() == PermissionStatus.granted;
-      }
-
-      if (!isCameraGranted) {
-        // Have not permission to camera
-        return;
-      }
-
-      // Generate filepath for saving
-      String imagePath = join((await getApplicationSupportDirectory()).path,
-          "${(DateTime.now().millisecondsSinceEpoch / 1000).round()}.jpeg");
-
-      try {
-        //Make sure to await the call to detectEdge.
-        bool success = await EdgeDetection.detectEdge(
-          imagePath,
-          canUseGallery: true,
-          androidScanTitle: 'Scanning', // use custom localizations for android
-          androidCropTitle: 'Crop',
-          androidCropBlackWhiteTitle: 'Black White',
-          androidCropReset: 'Reset',
-        );
-        print("success: $success");
-      } catch (e) {
-        print(e);
-      }
-      if (!mounted) return;
-      setState(() {
-        if (_imagee==null){
-          _imagee = imagePath;
-        }else {
-          _imageee = imagePath;
-        }
-      });
-    }
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final image = await ImagePicker().pickImage(source: source);
-      if (image == null) return;
-      setState(() {
-        _image = File(image.path);
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-  }
-
 
   @override
   void dispose() {
@@ -95,8 +43,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     mobileController.dispose();
     super.dispose();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -111,99 +57,92 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                SizedBox(height: 5),
                 CustomTextField(
                   controller: firstNameController,
                   labelText: 'First Name',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a valid first name';
+                      return 'Please enter Your First name';
                     }
                     return null;
                   },
                 ),
-
-                SizedBox(height: 5),
-                TextField(
-                  controller: firstNameController,
-                  decoration: InputDecoration(
-              labelText: "firstName",
-              fillColor: Colors.white,
-              border:  OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25.0),
-                borderSide: const BorderSide(
-                ),
-              ),
-            ),
-                ),
-                TextField(
+                SizedBox(height: 10),
+                CustomTextField(
                   controller: lastNameController,
-                  decoration: InputDecoration(labelText: 'Last Name'),
+                  labelText: 'Last Name',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Your Last name';
+                    }
+                    return null;
+                  },
                 ),
-                TextField(
+                SizedBox(height: 10),
+                CustomTextField(
                   controller: addressController,
-                  decoration: InputDecoration(labelText: 'Address'),
+                  labelText: 'Address',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Your Address';
+                    }
+                    return null;
+                  },
                 ),
-                TextField(
+                SizedBox(height: 10),
+                CustomTextField(
                   controller: areaController,
-                  decoration: InputDecoration(
-                    labelText: "area",
-                    fillColor: Colors.white,
-                    border:  OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                      borderSide: const BorderSide(
-                      ),
-                    ),
+                  labelText: 'Area',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Your Area';
+                    }
+                    return null;
+                  },
                 ),
-                ),
-                TextField(
+                SizedBox(height: 10),
+                CustomTextField(
                   controller: landlineController,
-                  decoration: InputDecoration(labelText: 'Landline',
-                      enabledBorder:OutlineInputBorder(borderSide:
-                      BorderSide(width: 3, color: Colors.purple), //<-- SEE HERE
-                        borderRadius: BorderRadius.circular(50.0),) ),
+                  labelText: 'Landline',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a valid Landline Number';
+                    }
+                    return null;
+                  },
                 ),
-                TextField(
+                SizedBox(height: 10),
+                CustomTextField(
                   controller: mobileController,
-                  decoration: InputDecoration(labelText: 'Mobile'),
+                  labelText: 'Mobile Number',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Your Mobile Number';
+                    }
+                    return null;
+                  },
                 ),
-                ElevatedButton(
-                  onPressed: submitForm,
-                  child: Text('Submit'),
-                ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
-                    _image = null;
                     _detectIdCard();
-                    // _pickImage(ImageSource.camera).then((value) {
-                    //   if (_image != null) {
-                    //     //
-                    //   }
-                    // });
                   },
                   child: const Text('Pick front image'),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    _image = null;
-                    _pickImage(ImageSource.gallery).then((value) {
-                      if (_image != null) {
-                       //
+                    if (_formKey.currentState!.validate()) {
+                      if (_frontId != null && _backId != null ) {
+                        _submit();
+                        _clearFields();
+                      }else {
+                        fillPhoto(context);
                       }
-                    });
+                    }
                   },
-                  child: const Text('Pick image from gallery'),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _imagee=null;
-                      _imageee=null;
-                    });
-                  },
-                  child: const Text('reset'),
+                  child: const Text('Submit'),
                 ),
                 SizedBox(height: 20),
                 Container(
@@ -211,21 +150,17 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                   height: 250,
                   color: Colors.grey.shade100,
                   child: Center(
-                    child: (_imagee != null)
-                        ? Image.file(File(_imagee!))
-                        : Image.asset(AssetsImages.frontID,),
+                    child: (_frontImage != null)
+                        ? Image.file(File(_frontImage!))
+                        : Image.asset(
+                            AssetsImages.frontID,
+                          ),
                   ),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    _image = null;
                     _detectIdCard();
-                    // _pickImage(ImageSource.camera).then((value) {
-                    //   if (_image != null) {
-                    //     //
-                    //   }
-                    // });
                   },
                   child: const Text('Pick back image'),
                 ),
@@ -234,10 +169,20 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                   height: 250,
                   color: Colors.grey.shade100,
                   child: Center(
-                    child: (_imageee != null)
-                        ? Image.file(File(_imageee!))
+                    child: (_backImage != null)
+                        ? Image.file(File(_backImage!))
                         : const Icon(Icons.add_a_photo, size: 60),
                   ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _clearFields();
+                      _frontImage = null;
+                      _backImage = null;
+                    });
+                  },
+                  child: const Text('reset'),
                 ),
               ],
             ),
@@ -246,23 +191,63 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
       ),
     );
   }
-  void submitForm() {
-    final firstName = firstNameController.text;
-    final lastName = lastNameController.text;
-    final address = addressController.text;
-    final area = areaController.text;
-    final landline = landlineController.text;
-    final mobile = mobileController.text;
 
-    print('First Name: $firstName');
-    print('Last Name: $lastName');
-    print('Address: $address');
-    print('Area: $area');
-    print('Landline: $landline');
-    print('Mobile: $mobile');
+  Future<void> _detectIdCard() async {
+    bool isCameraGranted = await Permission.camera.request().isGranted;
+    if (!isCameraGranted) {
+      isCameraGranted =
+          await Permission.camera.request() == PermissionStatus.granted;
+    }
 
+    if (!isCameraGranted) {
+      // Have not permission to camera
+      return;
+    }
 
-    // Clear the text fields
+    // Generate filepath for saving
+    String imagePath = join((await getApplicationSupportDirectory()).path,
+        "${(DateTime.now().millisecondsSinceEpoch / 1000).round()}.jpeg");
+    try {
+      //Make sure to await the call to detectEdge.
+      bool success = await EdgeDetection.detectEdge(
+        imagePath,
+        canUseGallery: true,
+        androidScanTitle: 'Scanning',
+        androidCropTitle: 'Crop',
+        androidCropBlackWhiteTitle: 'Black White',
+        androidCropReset: 'Reset',
+      );
+      print("success: $success");
+    } catch (e) {
+      print(e);
+    }
+    if (!mounted) return;
+    setState(() {
+      if (_frontImage == null) {
+        _frontImage = imagePath;
+        _frontId = path.basename(imagePath);
+      } else {
+        _backImage = imagePath;
+        _backId = _frontId = path.basename(imagePath);
+      }
+    });
+  }
+
+  void _submit() async {
+    final list = {
+      UserFields.firstName: firstNameController.text,
+      UserFields.lastName: lastNameController.text,
+      UserFields.address: addressController.text,
+      UserFields.area: areaController.text,
+      UserFields.landline: landlineController.text,
+      UserFields.mobile: mobileController.text,
+      UserFields.frontId: _frontId,
+      UserFields.backId: _backId,
+    };
+    await GoogleSheets.insertNewRow([list]);
+  }
+
+  void _clearFields() {
     firstNameController.clear();
     lastNameController.clear();
     addressController.clear();
@@ -270,6 +255,15 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     landlineController.clear();
     mobileController.clear();
   }
+
+  void fillPhoto(BuildContext context) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content:  Text('You must take id Scan',style: TextStyle(fontSize: 12),),
+        action: SnackBarAction(
+          label: 'ok', onPressed: scaffold.hideCurrentSnackBar,),
+      ),
+    );
+  }
 }
-
-
