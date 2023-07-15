@@ -1,18 +1,15 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:edge_detection/edge_detection.dart';
-import 'package:path/path.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
-import 'package:sizer/sizer.dart';
 import '../constants/custom_widget.dart';
 import '../constants/utils.dart';
 import '../model/user_model.dart';
 import '../shared/remote/Gsheets.dart';
+import '../shared/remote/gphotos.dart';
 
 class ScanIdScreen extends StatefulWidget {
   @override
@@ -43,6 +40,7 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
     mobileController.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -222,10 +220,12 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
       print(e);
     }
     if (!mounted) return;
-    setState(() {
+    setState(() async {
       if (_frontImage == null) {
         _frontImage = imagePath;
         _frontId = path.basename(imagePath);
+        File file = File(imagePath);
+        await PhotoUploader.uploadImageToDrive(file);
       } else {
         _backImage = imagePath;
         _backId = _frontId = path.basename(imagePath);
