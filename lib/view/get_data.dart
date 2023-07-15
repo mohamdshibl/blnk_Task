@@ -129,20 +129,6 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                   child: const Text('Pick front image'),
                 ),
                 SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      if (_frontId != null && _backId != null ) {
-                        _submit();
-                        _clearFields();
-                      }else {
-                        fillPhoto(context);
-                      }
-                    }
-                  },
-                  child: const Text('Submit'),
-                ),
-                SizedBox(height: 20),
                 Container(
                   width: double.infinity,
                   height: 250,
@@ -162,6 +148,7 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                   },
                   child: const Text('Pick back image'),
                 ),
+                SizedBox(height: 20),
                 Container(
                   width: double.infinity,
                   height: 250,
@@ -172,16 +159,37 @@ class _ScanIdScreenState extends State<ScanIdScreen> {
                         : const Icon(Icons.add_a_photo, size: 60),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _clearFields();
-                      _frontImage = null;
-                      _backImage = null;
-                    });
-                  },
-                  child: const Text('reset'),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _clearFields();
+                          _frontImage = null;
+                          _backImage = null;
+                        });
+                      },
+                      child: const Text('reset'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          if (_frontId != null && _backId != null ) {
+                            _submit();
+                            _clearFields();
+                          }else {
+                            fillPhoto(context);
+                          }
+                        }
+                      },
+                      child: const Text('Submit'),
+                    ),
+
+                  ],
                 ),
+
               ],
             ),
           ),
